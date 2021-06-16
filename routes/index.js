@@ -3,9 +3,9 @@ var router = express.Router();
 const jwt = require("jsonwebtoken");
 
 var MongoClient = require('mongodb').MongoClient;
-var urlToCreate = "mongodb://localhost:27017/<project>DB";
-var url = "mongodb://localhost:27017/";
-
+var urlToCreate = "mongodb://srv1/projectDB";//change localhost to srv1 in the seminar
+var url = "mongodb://srv1/";//change localhost to srv1 in the seminar
+//localhost:27017
 const TOKEN_SECRET =
   "F9EACB0E0AB8102E999DF5E3808B215C028448E868333041026C481960EFC126";
 
@@ -26,16 +26,17 @@ router.get("/createDB", (req, res) => {
   });
 })
 
-router.get("/createUserColection", () => {
-  MongoClient.connect(url, function (err, db) {
-    if (err) throw err;
+router.get("/createUserColection", async (req, res) => {
+  try {
+    const db = await MongoClient.connect(url)
     var dbo = db.db("projectDB");
-    dbo.createCollection("users", function (err, res) {
-      if (err) throw err;
-      console.log("Collection created!");
-      db.close();
-    });
-  });
+    await dbo.createCollection("users")
+    console.log("Collection created!");
+    db.close();
+    return res.send("Collection created!")
+}catch (error) {
+  return res.status(500).send(error)
+}
 })
 
 router.get("/login", function (req, res) {
