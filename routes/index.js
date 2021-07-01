@@ -3,8 +3,8 @@ var router = express.Router();
 const jwt = require("jsonwebtoken");
 
 var MongoClient = require('mongodb').MongoClient;
-var urlToCreate = "mongodb://srv1/projectDB";//change localhost to srv1 in the seminar
-var url = "mongodb://srv1/";//change localhost to srv1 in the seminar
+var urlToCreate = "mongodb://srv1/10bisDB";//change localhost to srv1 in the seminar
+var url = "mongodb://srv1:27017/";//change localhost to srv1 in the seminar
 //localhost:27017
 const TOKEN_SECRET =
   "F9EACB0E0AB8102E999DF5E3808B215C028448E868333041026C481960EFC126";
@@ -29,8 +29,8 @@ router.get("/createDB", (req, res) => {
 router.get("/createUserColection", async (req, res) => {
   try {
     const db = await MongoClient.connect(url)
-    var dbo = db.db("projectDB");
-    await dbo.createCollection("users")
+    var dbo = db.db("10bisDB");
+    await dbo.createCollection("Users")
     console.log("Collection created!");
     db.close();
     return res.send("Collection created!")
@@ -45,9 +45,9 @@ router.get("/login", function (req, res) {
   //Check the pwd in the server
   MongoClient.connect(url, function (err, db) {
     if (err) throw err;
-    var dbo = db.db("projectDB");
+    var dbo = db.db("10bisDB");
     var query = { user };
-    dbo.collection("users").find(query).toArray(function (err, result) {
+    dbo.collection("Users").find(query).toArray(function (err, result) {
       if (err) throw err;
       if (!result || result.length === 0) {
         return res.status(401).send();
@@ -66,21 +66,32 @@ router.get("/login", function (req, res) {
 });
 
 router.post("/signup", function (req, res) {
-  const { user, password } = req.body; //Adress, phone ....
+  const {userName, firstName, lastName, email, password, phone, adrress} = req.body; //Adress, phone ....
   //Validations.
   //Check if user exists
-  MongoClient.connect(url, function (err, db) {
-    if (err) throw err;
-    var dbo = db.db("projectDB");
-    var myobj = { username: user, password };
-    dbo.collection("users").insertOne(myobj, function (err, res) {
-      if (err) throw err;
-      console.log("1 document inserted");
-      db.close();
+  try {
+    MongoClient.connect(url, function (err, db) {
+      try {
+        if (err) throw err;
+        var dbo = db.db("10bisDB");
+        var myobj = { userName, firstName, lastName, email, password, phone, adrress };
+        dbo.collection("Users").insertOne(myobj, function (err, respon) {
+          if (err) throw err;
+          console.log("1 document inserted");
+          db.close();
+          // const token = generateAccessToken(myobj);
+          // console.log("token", token);
+          // return respon.send();
+        });
+        return res.send();
+      } catch (error) {
+        throw error
+      }
     });
-    const token = generateAccessToken(user);
-    console.log("token", token);
-    return res.json({ token }).send();
-  });
-});
+  } catch (error) {
+    throw error
+
+  }
+});    
+    
 module.exports = router;
