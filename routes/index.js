@@ -39,9 +39,9 @@ router.get("/createUserColection", async (req, res) => {
 }
 })
 
-router.get("/login", function (req, res) {
+router.get("/login/:userName/:password", function (req, res) {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
-  const { user, password } = req.query;
+  const { user, password } = req.params;
   //Check the pwd in the server
   MongoClient.connect(url, function (err, db) {
     if (err) throw err;
@@ -66,16 +66,21 @@ router.get("/login", function (req, res) {
 });
 
 router.post("/signup", function (req, res) {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
+
   const {userName, firstName, lastName, email, password, phone, adrress} = req.body; //Adress, phone ....
   //Validations.
   //Check if user exists
+ 
   try {
     MongoClient.connect(url, function (err, db) {
       try {
         if (err) throw err;
         var dbo = db.db("10bisDB");
-        var myobj = { userName, firstName, lastName, email, password, phone, adrress };
+        var myobj = { email, password, firstName, lastName,  phone, adrress};
+       console.log("Before save");
         dbo.collection("Users").insertOne(myobj, function (err, respon) {
+       console.log("After save");
           if (err) throw err;
           console.log("1 document inserted");
           db.close();
